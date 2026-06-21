@@ -12,8 +12,9 @@ public final class Recipe {
     public var isFavourite: Bool
     public var timesCooked: Int
     public var instructions: String // Added to allow user to store recipe instructions
+    @Attribute(.externalStorage) public var imageData: Data?
     
-    public init(id: UUID = UUID(), name: String, servings: Int = 4, cookTimeMinutes: Int = 30, cuisine: String = "General", ingredients: [Ingredient] = [], isFavourite: Bool = false, timesCooked: Int = 0, instructions: String = "") {
+    public init(id: UUID = UUID(), name: String, servings: Int = 4, cookTimeMinutes: Int = 30, cuisine: String = "General", ingredients: [Ingredient] = [], isFavourite: Bool = false, timesCooked: Int = 0, instructions: String = "", imageData: Data? = nil) {
         self.id = id
         self.name = name
         self.servings = servings
@@ -23,5 +24,6 @@ public final class Recipe {
         self.isFavourite = isFavourite
         self.timesCooked = timesCooked
         self.instructions = instructions
+        self.imageData = imageData
     }
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct AddEditRecipeView: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,6 +14,13 @@ struct AddEditRecipeView: View {
     @State private var cuisine: String = "General"
     @State private var instructions: String = ""
     @State private var isFavourite: Bool = false
+    
+    // Image selection state
+    @State private var photosPickerItem: PhotosPickerItem? = nil
+    @State private var selectedImageData: Data? = nil
+    @State private var showingCamera = false
+    @State private var showingActionSheet = false
+    @State private var showingPhotosPicker = false
     
     // Ingredients list in progress
     @State private var draftIngredients: [Ingredient] = []
@@ -48,201 +56,11 @@ struct AddEditRecipeView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
-                        // Section 1: Recipe Basics
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Recipe Details")
-                                .font(.headline)
-                                .foregroundColor(.teal)
-                            
-                            TextField("Recipe Name", text: $name)
-                                .padding()
-                                .background(Color.white.opacity(0.06))
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                            
-                            HStack {
-                                Text("Cuisine")
-                                    .foregroundColor(.white.opacity(0.8))
-                                Spacer()
-                                Picker("Cuisine", selection: $cuisine) {
-                                    ForEach(cuisines, id: \.self) { c in
-                                        Text(c).tag(c)
-                                    }
-                                }
-                                .tint(.green)
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color.white.opacity(0.06))
-                            .cornerRadius(10)
-                            
-                            HStack {
-                                Text("Servings")
-                                    .foregroundColor(.white.opacity(0.8))
-                                Spacer()
-                                Stepper("\(servings)", value: $servings, in: 1...20)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color.white.opacity(0.06))
-                            .cornerRadius(10)
-                            
-                            HStack {
-                                Text("Cook Time (Mins)")
-                                    .foregroundColor(.white.opacity(0.8))
-                                Spacer()
-                                Stepper("\(cookTimeMinutes)m", value: $cookTimeMinutes, in: 5...180, step: 5)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color.white.opacity(0.06))
-                            .cornerRadius(10)
-                        }
-                        .padding()
-                        .background(Color.white.opacity(0.03))
-                        .cornerRadius(14)
-                        
-                        // Section 2: Add Ingredient Sub-Form
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Add Ingredient")
-                                .font(.headline)
-                                .foregroundColor(.teal)
-                            
-                            TextField("Ingredient name (e.g. Eggs)", text: $newIngName)
-                                .padding()
-                                .background(Color.white.opacity(0.06))
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                            
-                            if !filteredSuggestions.isEmpty {
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 8) {
-                                        ForEach(filteredSuggestions) { suggestion in
-                                            Button(action: {
-                                                newIngName = suggestion.name
-                                                newIngUnit = suggestion.defaultUnit
-                                                newIngCategory = suggestion.category
-                                            }) {
-                                                HStack(spacing: 6) {
-                                                    Image(systemName: suggestion.category.icon)
-                                                        .font(.system(size: 11))
-                                                    Text(suggestion.name)
-                                                        .font(.system(size: 13, weight: .medium))
-                                                }
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 8)
-                                                .background(Color.white.opacity(0.12))
-                                                .foregroundColor(.white)
-                                                .cornerRadius(16)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 16)
-                                                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                                                )
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
-                                    }
-                                    .padding(.vertical, 4)
-                                }
-                            }
-                            
-                            HStack(spacing: 12) {
-                                TextField("Qty", text: $newIngQty)
-                                    .keyboardType(.decimalPad)
-                                    .padding()
-                                    .background(Color.white.opacity(0.06))
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
-                                    .frame(width: 80)
-                                
-                                Picker("Unit", selection: $newIngUnit) {
-                                    ForEach(units, id: \.self) { u in
-                                        Text(u).tag(u)
-                                    }
-                                }
-                                .tint(.green)
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                                .background(Color.white.opacity(0.06))
-                                .cornerRadius(10)
-                                
-                                Picker("Category", selection: $newIngCategory) {
-                                    ForEach(GroceryCategory.allCases) { cat in
-                                        Text(cat.rawValue).tag(cat)
-                                    }
-                                }
-                                .tint(.green)
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                                .background(Color.white.opacity(0.06))
-                                .cornerRadius(10)
-                            }
-                            
-                            Button(action: addIngredientToDraft) {
-                                HStack {
-                                    Image(systemName: "plus")
-                                    Text("Add to Ingredient List")
-                                }
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.green)
-                                .cornerRadius(10)
-                            }
-                            .disabled(newIngName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                            .opacity(newIngName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
-                        }
-                        .padding()
-                        .background(Color.white.opacity(0.03))
-                        .cornerRadius(14)
-                        
-                        // Section 3: Ingredients List
-                        if !draftIngredients.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Ingredient List")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                
-                                ForEach(draftIngredients) { ing in
-                                    HStack {
-                                        Image(systemName: ing.groceryCategory.icon)
-                                            .foregroundColor(.teal)
-                                        Text(ing.name)
-                                            .foregroundColor(.white)
-                                        Spacer()
-                                        Text("\(formatQuantity(ing.quantity)) \(ing.unit)")
-                                            .foregroundColor(.gray)
-                                        
-                                        Button(action: { removeIngredientFromDraft(ing) }) {
-                                            Image(systemName: "trash")
-                                                .foregroundColor(.red)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                    .padding()
-                                    .background(Color.white.opacity(0.05))
-                                    .cornerRadius(8)
-                                }
-                            }
-                        }
-                        
-                        // Section 4: Instructions/Notes
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Cooking Instructions / Notes")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                            
-                            TextEditor(text: $instructions)
-                                .frame(height: 120)
-                                .padding(8)
-                                .background(Color.white.opacity(0.06))
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                        }
+                        photoCardSection
+                        recipeDetailsSection
+                        addIngredientSection
+                        draftIngredientsSection
+                        instructionsSection
                     }
                     .padding()
                 }
@@ -275,6 +93,37 @@ struct AddEditRecipeView: View {
                     instructions = recipe.instructions
                     isFavourite = recipe.isFavourite
                     draftIngredients = recipe.ingredients
+                    selectedImageData = recipe.imageData
+                }
+            }
+            .sheet(isPresented: $showingCamera) {
+                CameraPicker(selectedData: $selectedImageData)
+            }
+            .confirmationDialog("Choose Recipe Photo", isPresented: $showingActionSheet) {
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    Button("Take Photo") {
+                        showingCamera = true
+                    }
+                }
+                Button("Choose from Library") {
+                    showingPhotosPicker = true
+                }
+                if selectedImageData != nil {
+                    Button("Remove Photo", role: .destructive) {
+                        selectedImageData = nil
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+            .photosPicker(isPresented: $showingPhotosPicker, selection: $photosPickerItem, matching: .images)
+            .onChange(of: photosPickerItem) { newItem in
+                Task {
+                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                        if let image = UIImage(data: data),
+                           let compressedData = image.jpegData(compressionQuality: 0.7) {
+                            selectedImageData = compressedData
+                        }
+                    }
                 }
             }
         }
@@ -317,6 +166,7 @@ struct AddEditRecipeView: View {
             recipe.cuisine = cuisine
             recipe.instructions = instructions
             recipe.ingredients = draftIngredients
+            recipe.imageData = selectedImageData
         } else {
             // Create new
             let newRecipe = Recipe(
@@ -327,7 +177,8 @@ struct AddEditRecipeView: View {
                 ingredients: draftIngredients,
                 isFavourite: isFavourite,
                 timesCooked: 0,
-                instructions: instructions
+                instructions: instructions,
+                imageData: selectedImageData
             )
             modelContext.insert(newRecipe)
         }
@@ -440,3 +291,306 @@ private let predefinedIngredients: [PredefinedIngredient] = [
     PredefinedIngredient(name: "Naan Bread", category: .bakery, defaultUnit: "items"),
     PredefinedIngredient(name: "Roti / Chapati", category: .bakery, defaultUnit: "items")
 ]
+
+extension AddEditRecipeView {
+    @ViewBuilder
+    private var photoCardSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recipe Photo")
+                .font(.headline)
+                .foregroundColor(.teal)
+            
+            Button(action: { showingActionSheet = true }) {
+                if let data = selectedImageData, let uiImage = UIImage(data: data) {
+                    ZStack(alignment: .topTrailing) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 180)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(12)
+                            .clipped()
+                        
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.green)
+                            .background(Color.black.clipShape(Circle()))
+                            .padding(8)
+                    }
+                } else {
+                    VStack(spacing: 8) {
+                        Image(systemName: "photo.badge.plus")
+                            .font(.system(size: 32))
+                            .foregroundColor(.green)
+                        Text("Add Photo")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
+                    .background(Color.white.opacity(0.04))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    )
+                }
+            }
+        }
+        .padding()
+        .background(Color.white.opacity(0.02))
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.white.opacity(0.04), lineWidth: 1)
+        )
+    }
+    
+    @ViewBuilder
+    private var recipeDetailsSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Recipe Details")
+                .font(.headline)
+                .foregroundColor(.teal)
+            
+            TextField("Recipe Name", text: $name)
+                .padding()
+                .background(Color.white.opacity(0.06))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            
+            HStack {
+                Text("Cuisine")
+                    .foregroundColor(.white.opacity(0.8))
+                Spacer()
+                Picker("Cuisine", selection: $cuisine) {
+                    ForEach(cuisines, id: \.self) { c in
+                        Text(c).tag(c)
+                    }
+                }
+                .tint(.green)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color.white.opacity(0.06))
+            .cornerRadius(10)
+            
+            HStack {
+                Text("Servings")
+                    .foregroundColor(.white.opacity(0.8))
+                Spacer()
+                Stepper("\(servings)", value: $servings, in: 1...20)
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color.white.opacity(0.06))
+            .cornerRadius(10)
+            
+            HStack {
+                Text("Cook Time (Mins)")
+                    .foregroundColor(.white.opacity(0.8))
+                Spacer()
+                Stepper("\(cookTimeMinutes)m", value: $cookTimeMinutes, in: 5...180, step: 5)
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color.white.opacity(0.06))
+            .cornerRadius(10)
+        }
+        .padding()
+        .background(Color.white.opacity(0.03))
+        .cornerRadius(14)
+    }
+    
+    @ViewBuilder
+    private var addIngredientSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Add Ingredient")
+                .font(.headline)
+                .foregroundColor(.teal)
+            
+            TextField("Ingredient name (e.g. Eggs)", text: $newIngName)
+                .padding()
+                .background(Color.white.opacity(0.06))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            
+            if !filteredSuggestions.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(filteredSuggestions) { suggestion in
+                            Button(action: {
+                                newIngName = suggestion.name
+                                newIngUnit = suggestion.defaultUnit
+                                newIngCategory = suggestion.category
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: suggestion.category.icon)
+                                        .font(.system(size: 11))
+                                    Text(suggestion.name)
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.white.opacity(0.12))
+                                .foregroundColor(.white)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            
+            HStack(spacing: 12) {
+                TextField("Qty", text: $newIngQty)
+                    .keyboardType(.decimalPad)
+                    .padding()
+                    .background(Color.white.opacity(0.06))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .frame(width: 80)
+                
+                Picker("Unit", selection: $newIngUnit) {
+                    ForEach(units, id: \.self) { u in
+                        Text(u).tag(u)
+                    }
+                }
+                .tint(.green)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.white.opacity(0.06))
+                .cornerRadius(10)
+                
+                Picker("Category", selection: $newIngCategory) {
+                    ForEach(GroceryCategory.allCases) { cat in
+                        Text(cat.rawValue).tag(cat)
+                    }
+                }
+                .tint(.green)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.white.opacity(0.06))
+                .cornerRadius(10)
+            }
+            
+            Button(action: addIngredientToDraft) {
+                HStack {
+                    Image(systemName: "plus")
+                    Text("Add to Ingredient List")
+                }
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.green)
+                .cornerRadius(10)
+            }
+            .disabled(newIngName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .opacity(newIngName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
+        }
+        .padding()
+        .background(Color.white.opacity(0.03))
+        .cornerRadius(14)
+    }
+    
+    @ViewBuilder
+    private var draftIngredientsSection: some View {
+        if !draftIngredients.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Ingredient List")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                
+                ForEach(draftIngredients) { ing in
+                    HStack {
+                        Image(systemName: ing.groceryCategory.icon)
+                            .foregroundColor(.teal)
+                        Text(ing.name)
+                            .foregroundColor(.white)
+                        Spacer()
+                        Text("\(formatQuantity(ing.quantity)) \(ing.unit)")
+                            .foregroundColor(.gray)
+                        
+                        Button(action: { removeIngredientFromDraft(ing) }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.05))
+                    .cornerRadius(8)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var instructionsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Cooking Instructions / Notes")
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            TextEditor(text: $instructions)
+                .frame(height: 120)
+                .padding(8)
+                .background(Color.white.opacity(0.06))
+                .foregroundColor(.white)
+                .cornerRadius(10)
+        }
+    }
+}
+
+// MARK: - CameraPicker Coordinator for taking photo
+struct CameraPicker: UIViewControllerRepresentable {
+    @Binding var selectedData: Data?
+    @Environment(\.dismiss) private var dismiss
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.allowsEditing = true
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPicker
+        
+        init(_ parent: CameraPicker) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let editedImage = info[.editedImage] as? UIImage,
+               let data = editedImage.jpegData(compressionQuality: 0.7) {
+                parent.selectedData = data
+            } else if let originalImage = info[.originalImage] as? UIImage,
+                      let data = originalImage.jpegData(compressionQuality: 0.7) {
+                parent.selectedData = data
+            }
+            parent.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}

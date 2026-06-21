@@ -17,6 +17,21 @@ struct RecipeDetailView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    // Recipe Image Banner
+                    if let imageData = recipe.imageData, let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 220)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(16)
+                            .clipped()
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                            )
+                    }
+                    
                     // Header Card
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {

@@ -167,7 +167,24 @@ struct RecipeRowView: View {
     @Bindable var recipe: Recipe
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
+            if let imageData = recipe.imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 65, height: 65)
+                    .cornerRadius(8)
+                    .clipped()
+            } else {
+                ZStack {
+                    Color.white.opacity(0.05)
+                    Image(systemName: "fork.knife")
+                        .foregroundColor(.gray.opacity(0.5))
+                }
+                .frame(width: 65, height: 65)
+                .cornerRadius(8)
+            }
+            
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(recipe.name)
@@ -212,13 +229,13 @@ struct RecipeRowView: View {
                 .font(.subheadline)
                 .foregroundColor(.gray)
             }
-            .padding()
-            .background(Color.white.opacity(0.03))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.05), lineWidth: 1)
-            )
         }
+        .padding(10)
+        .background(Color.white.opacity(0.03))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+        )
     }
 }
