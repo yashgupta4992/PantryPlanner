@@ -80,16 +80,18 @@ Families already know their go-to meals and usual ingredients — they just need
 ### Phase 1 — MVP (Months 1–3)
 *Goal: A working app real families use every weekend*
 
-- [ ] Xcode project setup with SwiftUI
+- [x] Xcode project setup with SwiftUI
 - [ ] Family onboarding screen (size, dietary preferences)
-- [ ] Recipe model: name, ingredients, servings, cuisine tag
-- [ ] Recipe list & detail screens
-- [ ] Add/edit recipe flow
-- [ ] Weekly meal plan grid (Mon–Sun)
-- [ ] Auto-generated grocery list from meal plan
-- [ ] Ingredient consolidation (combine duplicates)
-- [ ] Check-off shopping mode
-- [ ] Basic settings (household size, reset week)
+- [x] Recipe model: name, ingredients, servings, cuisine tag, and photos
+- [x] Recipe list & detail screens (including photo thumbnails/banners)
+- [x] Add/edit recipe flow (with library picker & camera capture support)
+- [x] Weekly meal plan grid (Mon–Sun) (with synchronized week navigation)
+- [x] Auto-generated grocery list from meal plan
+- [x] Ingredient consolidation (combine duplicates)
+- [x] Check-off shopping mode
+- [x] Basic settings (household size, reset week)
+- [ ] Grocery List → Pantry Sync (marking items purchased auto-updates inventory) *[Accelerated from Phase 2]*
+- [ ] Intelligent expiry date defaults per category (e.g. Meat = 3 days, Dairy = 7 days) *[Accelerated from Phase 2]*
 
 **Exit criteria:** 20 real families using it every weekend for 4+ weeks
 
@@ -151,6 +153,7 @@ struct Recipe {
     var ingredients: [Ingredient]
     var isFavourite: Bool
     var timesCooked: Int
+    var imageData: Data? // JPEG representation of recipe photo
 }
 ```
 
