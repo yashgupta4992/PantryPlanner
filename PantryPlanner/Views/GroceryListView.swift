@@ -6,7 +6,7 @@ struct GroceryListView: View {
     @Query private var allPlans: [WeeklyPlan]
     @Query private var customItems: [CustomGroceryItem]
     
-    @State private var currentWeekStart: Date = Date().startOfWeek()
+    @Binding var currentWeekStart: Date
     
     // In-memory checked state for dynamically aggregated recipe ingredients
     @State private var checkedRecipeIngredients: Set<String> = []
@@ -68,15 +68,32 @@ struct GroceryListView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Week range info bar
+                    // Week Selector Header
                     HStack {
-                        Image(systemName: "calendar")
-                            .foregroundColor(.green)
-                        Text("Grocery List for \(weekRangeString)")
-                            .font(.system(.subheadline, design: .rounded))
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
+                        Button(action: { changeWeek(byDays: -7) }) {
+                            Image(systemName: "chevron.left")
+                                .font(.title3)
+                                .foregroundColor(.green)
+                        }
+                        
                         Spacer()
+                        
+                        HStack(spacing: 8) {
+                            Image(systemName: "calendar")
+                                .foregroundColor(.green)
+                            Text("Groceries: \(weekRangeString)")
+                                .font(.system(.headline, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: { changeWeek(byDays: 7) }) {
+                            Image(systemName: "chevron.right")
+                                .font(.title3)
+                                .foregroundColor(.green)
+                        }
                     }
                     .padding()
                     .background(Color.white.opacity(0.03))
@@ -239,10 +256,11 @@ struct GroceryListView: View {
                     }
                 }
             }
-            .onAppear {
-                currentWeekStart = Date().startOfWeek()
-            }
         }
+    }
+    
+    private func changeWeek(byDays days: Int) {
+        currentWeekStart = currentWeekStart.adding(days: days)
     }
     
     var weekRangeString: String {

@@ -6,7 +6,7 @@ struct MealPlannerView: View {
     @Query(sort: \WeeklyPlan.weekStartDate) private var allPlans: [WeeklyPlan]
     @Query(sort: \Recipe.name) private var allRecipes: [Recipe]
     
-    @State private var currentWeekStart: Date = Date().startOfWeek()
+    @Binding var currentWeekStart: Date
     @State private var activePlan: WeeklyPlan? = nil
     @State private var selectedDayForAddingRecipe: DayPlan? = nil
     

@@ -3,6 +3,7 @@ import SwiftData
 
 struct MainTabView: View {
     @State private var selectedTab: Int = 0
+    @State private var currentWeekStart: Date = Date.defaultPlannerWeekStart()
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -12,13 +13,13 @@ struct MainTabView: View {
                 }
                 .tag(0)
             
-            MealPlannerView()
+            MealPlannerView(currentWeekStart: $currentWeekStart)
                 .tabItem {
                     Label("Planner", systemImage: "calendar")
                 }
                 .tag(1)
             
-            GroceryListView()
+            GroceryListView(currentWeekStart: $currentWeekStart)
                 .tabItem {
                     Label("Groceries", systemImage: "cart")
                 }

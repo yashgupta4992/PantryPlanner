@@ -76,4 +76,17 @@ extension Date {
     public func adding(days: Int) -> Date {
         Calendar.current.date(byAdding: .day, value: days, to: self) ?? self
     }
+    
+    public static func defaultPlannerWeekStart() -> Date {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekday = calendar.component(.weekday, from: today)
+        
+        // Sunday is 1, Saturday is 7
+        if weekday == 1 || weekday == 7 {
+            return today.adding(days: 7).startOfWeek()
+        } else {
+            return today.startOfWeek()
+        }
+    }
 }
