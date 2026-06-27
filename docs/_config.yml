@@ -1,0 +1,9 @@
+theme: jekyll-theme-minimal
+title: PantryPlanner
+description: Terms, Conditions, and Documentation
+author: yashgupta4992
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed
